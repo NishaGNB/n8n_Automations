@@ -1,0 +1,291 @@
+{
+  "name": "DailyNews",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom"
+            }
+          ]
+        }
+      },
+      "id": "7a316dc3-a392-4a24-845f-f91161838b23",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=12.9141&longitude=74.8560&current_weather=true",
+        "options": {}
+      },
+      "id": "3a12776e-0c81-4da7-a21d-d90003946826",
+      "name": "Get Weather (Open-Meteo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://zenquotes.io/api/random",
+        "options": {}
+      },
+      "id": "607980c2-cf4e-4daf-874e-f862be7e9f9e",
+      "name": "Get Quote (Quotable)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "subject": "🌤 Your Daily Briefing",
+        "message": "={{ $json.output }}",
+        "toList": [
+          "gnishabangeragnb@gmail.com"
+        ],
+        "additionalFields": {}
+      },
+      "id": "9acb4ea6-d4f4-4bdb-b31b-f09f61f223a5",
+      "name": "Send Email (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        800,
+        192
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "veCyKz36AqEwANZA",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        192,
+        240
+      ],
+      "id": "3cdcecda-0a47-4300-91ac-06f245e07274",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The Code node receives a list of all items from the Merge node\nconst newsData = items[0].json;\nconst weatherData = items[1].json;\nconst quoteData = items[2].json;\n\n// Handle news\nconst newsDescription = newsData?.articles?.[0]?.description ?? 'No news available.';\nconst newsContent = newsData?.articles?.[0]?.content ?? '';\n\n// Handle weather\nconst temperature = weatherData?.current_weather?.temperature ?? 'N/A';\nconst windspeed = weatherData?.current_weather?.windspeed ?? 'N/A';\n\n// Handle quotes (check multiple formats)\nlet quoteText = 'No quote available.';\nlet quoteAuthor = '';\n\nif (quoteData) {\n  if (Array.isArray(quoteData) && quoteData.length > 0) {\n    quoteText = quoteData[0]?.q ?? quoteData[0]?.quote ?? quoteText;\n    quoteAuthor = quoteData[0]?.a ?? quoteData[0]?.author ?? quoteAuthor;\n  } else {\n    quoteText = quoteData.q ?? quoteData.quote ?? quoteText;\n    quoteAuthor = quoteData.a ?? quoteData.author ?? quoteAuthor;\n  }\n}\n\n// Add a constant for the current date\nconst currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\n\n// Construct the full prompt with improved formatting instructions\nconst prompt = `Create a short daily briefing email for ${currentDate}. Do not use any special formatting like bolding or stars. The email should include:\n\nNews: ${newsDescription} ${newsContent}\nWeather: The current temperature is ${temperature}°C with a windspeed of ${windspeed} km/h.\nQuote of the day: \"${quoteText}\" by ${quoteAuthor}.\n\nRemove the sentence if its incomplete. Make it friendly and concise.`;\n\n// Return as a single item\nreturn [\n  {\n    json: {\n      promptText: prompt\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        208
+      ],
+      "id": "4ff4954d-7530-434e-97a6-2f6ddd9673ab",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.promptText }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        240
+      ],
+      "id": "de334dfb-c53b-4bdf-adee-2337fafa4e2b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        416,
+        480
+      ],
+      "id": "5501c5eb-8773-4551-917b-013f276f3b00",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1kEhrqzvlh0fnkGf",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+919148605869",
+        "toWhatsapp": true,
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        784,
+        432
+      ],
+      "id": "a9441954-6691-4c01-9a0b-b01db37ecadb",
+      "name": "Send an SMS/MMS/WhatsApp message",
+      "credentials": {
+        "twilioApi": {
+          "id": "uhqvuoriEQOA0xnL",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything?q=keyword&apiKey=c3efdc9f99244614a192ff79c2a05474",
+        "options": {}
+      },
+      "id": "e59d784f-3cff-4740-8c8e-7e5fd3667c0a",
+      "name": "Get News (GNews)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        48
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Weather (Open-Meteo)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Quote (Quotable)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get News (GNews)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather (Open-Meteo)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Quote (Quotable)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Gmail)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send an SMS/MMS/WhatsApp message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get News (GNews)1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c0e86eeb-7693-4e46-bfbf-50dbd9be3244",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4ccd79262d52482dcf52a723a4c7aff411ad58dbafacf30c8368fe69d7c9ae53"
+  },
+  "id": "06sIHDUHLwspK0dH",
+  "tags": []
+}
