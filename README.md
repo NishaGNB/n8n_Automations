@@ -1,4 +1,5 @@
-# n8n_Automations
+# 🧩 n8n_Automation
+
 This repository contains a collection of my custom-built n8n automation workflows in .json format. These workflows can be imported directly into an n8n instance to automate various tasks such as data syncing, email notifications, API integrations, and more.
 
 ---
@@ -7,11 +8,18 @@ This repository contains a collection of my custom-built n8n automation workflow
 
 Each .json file in this repo represents a single n8n workflow. Filenames are descriptive to help identify their purpose.
 
-    workflows/
-    ├── sheets-to-email.json
-    ├── api-data-fetcher.json
-    ├── daily-summary-to-telegram.json
-    └── ...
+      workflows/
+      │
+      ├── sheets-to-email/
+      │   └── sheets-to-email.json
+      │
+      ├── api-data-fetcher/
+      │   └── api-data-fetcher.json
+      │
+      ├── daily-summary-to-telegram/
+      │   └── daily-summary-to-telegram.json
+      │
+      └── README.md   # optional: document all workflows here
 
 ---
 
@@ -20,7 +28,7 @@ Each .json file in this repo represents a single n8n workflow. Filenames are des
 To use any of these workflows:
 
 1. Download or clone this repository:
-   git clone 
+   git clone https://github.com/NishaGNB/n8n_Automations
 
 2. Open your n8n instance (cloud or self-hosted).
 
@@ -61,4 +69,4 @@ Thanks to the n8n community and all open-source tool builders that help make aut
 
 n8n (pronounced "n-eight-n") is an extendable workflow automation tool that lets you connect various services via low-code/no-code flows.
 
-Learn more: https://n8n.io 
+Learn more: https://n8n.io
