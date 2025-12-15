@@ -62,6 +62,6 @@ Have a great day ahead!
 
 ## ⚠ Security Notes
 
-- Never commit API keys or credentials to version control.
+- Never commit API keys or credentials to version.
 - This workflow is intended for educational and internal automation purposes only.
 
