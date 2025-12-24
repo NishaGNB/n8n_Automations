@@ -44,7 +44,7 @@
     },
     {
       "parameters": {
-        "sendTo": "nishaschoice@gmail.com",
+        "sendTo": "yourgmail@gmail.com",
         "subject": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"].replace(/```json|```/g, \"\").trim()).EmailSubject }}\n",
         "emailType": "text",
         "message": "={{ JSON.parse($json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"].replace(/```json|```/g, \"\").trim()).EmailBody.replace(/\\\\n/g, \"\\n\") }}\n",
